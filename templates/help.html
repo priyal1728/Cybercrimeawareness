@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help - Cybercrime Awareness</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="brand" href="{{ url_for('index') }}">🔐 CyberSafe</a>
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('quiz') }}">Quiz</a>
+            <a href="{{ url_for('report') }}">Report & Help</a>
+            <a href="{{ url_for('about') }}">About</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <main class="detail-container">
+        <div class="detail-hero">
+            <span class="detail-icon">🛡️</span>
+            <p class="eyebrow">HELP & SUPPORT</p>
+            <h1>Cybercrime Awareness</h1>
+            <p>Learn more about online threats, protection, and how to stay safe.</p>
+        </div>
+
+        <section class="detail-panel">
+            <h2>How to Use This Website</h2>
+            <ul class="detail-list">
+                <li>Open the Home page to browse cybercrime topics.</li>
+                <li>Select a topic to read about the risks and prevention methods.</li>
+                <li>Open Safety Practices to learn how to stay safe online.</li>
+                <li>Visit the Quiz page to test your knowledge using a separate section.</li>
+            </ul>
+        </section>
+
+        <section class="detail-panel">
+            <h2>Main Cybercrime Awareness Site</h2>
+            <p>This website is designed to help users recognize common cybercrimes such as phishing, online fraud, identity theft, and cyberbullying.</p>
+            <ul class="detail-list">
+                <li>Understand how cybercriminals use fake messages, scams, and websites to steal information.</li>
+                <li>Learn the warning signs of online fraud, phishing, fake accounts, and suspicious links.</li>
+                <li>Protect accounts using strong passwords, two-factor authentication, and safe browsing habits.</li>
+                <li>Report unsafe activity, save evidence, and seek help from a trusted person when needed.</li>
+            </ul>
+        </section>
+
+        <div class="detail-actions">
+            <a class="btn" href="{{ url_for('index') }}">Back to Main Site</a>
+            <a class="btn btn-outline" href="{{ url_for('quiz') }}">Go to Quiz</a>
+        </div>
+    </main>
+</body>
+</html>

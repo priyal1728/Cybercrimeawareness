@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybercrime Awareness Quiz</title>
+</head>
+<body>
+    <h1>Cybercrime Awareness Quiz</h1>
+
+    {% if score is none %}
+        <form method="POST" action="{{ url_for('quiz') }}">
+            {% for question in questions %}
+                {% set question_index = loop.index0 %}
+
+                <fieldset>
+                    <legend>
+                        {{ loop.index }}. {{ question.question }}
+                    </legend>
+
+                    {% for option in question.options %}
+                        <label>
+                            <input
+                                type="radio"
+                                name="q{{ question_index }}"
+                                value="{{ loop.index0 }}"
+                                required
+                            >
+                            {{ option }}
+                        </label>
+                        <br>
+                    {% endfor %}
+                </fieldset>
+                <br>
+            {% endfor %}
+
+            <button type="submit">Submit Quiz</button>
+        </form>
+
+    {% else %}
+        <h2>Your Score: {{ score }} / {{ questions|length }}</h2>
+
+        {% for result in results %}
+            <div>
+                <h3>{{ loop.index }}. {{ result.question }}</h3>
+
+                <p>
+                    Your answer:
+                    {% if result.selected >= 0 and
+                          result.selected < result.options|length %}
+                        {{ result.options[result.selected] }}
+                    {% else %}
+                        Not answered
+                    {% endif %}
+                </p>
+
+                <p>
+                    Correct answer:
+                    {{ result.options[result.correct] }}
+                </p>
+
+                <p>{{ result.explanation }}</p>
+
+                <p>
+                    {% if result.is_correct %}
+                        Correct
+                    {% else %}
+                        Incorrect
+                    {% endif %}
+                </p>
+            </div>
+        {% endfor %}
+
+        <a href="{{ url_for('quiz') }}">Try Again</a>
+    {% endif %}
+
+    <p><a href="/">Back to Home</a></p>
+</body>
+</html>

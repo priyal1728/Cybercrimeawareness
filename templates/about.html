@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | Cybercrime Awareness</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="brand" href="{{ url_for('index') }}">🔐 CyberSafe</a>
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('quiz') }}">Quiz</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <main class="detail-container">
+        <h1>About This Project</h1>
+        <p>This website is designed to teach users about common cybercrime risks and safe online practices.</p>
+        <p>It includes educational content on topics such as phishing, identity theft, online fraud, malware, and cyberbullying.</p>
+        <p>Its goal is to help people recognize online threats and respond safely and confidently.</p>
+        <a class="btn" href="{{ url_for('index') }}">Back to Home</a>
+    </main>
+</body>
+</html>

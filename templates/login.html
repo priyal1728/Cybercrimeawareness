@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CyberSafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-body">
+    <div class="login-card">
+        <div class="login-icon">🔐</div>
+        <p class="eyebrow">CYBERSECURITY EDUCATION</p>
+        <h1>Welcome Back</h1>
+        <p class="muted">Login to explore cyber safety.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="alert">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text"
+                   placeholder="Enter username" autocomplete="username" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password"
+                   placeholder="Enter password" autocomplete="current-password" required>
+
+            <button type="submit" class="btn full-width">Login</button>
+        </form>
+
+        <div class="demo-note">
+            <strong>Demo login for project:</strong>
+            <p>Username: <code>student</code></p>
+            <p>Password: <code>cyber123</code></p>
+            <small>Use only for this local demo project.</small>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,895 @@
+from flask import Flask, render_template, request, redirect, url_for
+
+app = Flask(__name__)
+
+# Cybercrime awareness topics
+topics = {
+    "online-fraud": {
+        "title": "Online Fraud",
+        "icon": "🔐",
+        "description": "Learn to recognize payment scams, fake offers, and online shopping fraud.",
+        "intro": "Learn to recognize payment scams, fake offers, and online shopping fraud.",
+        "what": "Online fraud happens when scammers trick people into sending money or sharing banking details through fake offers, websites, or payment requests.",
+        "signs": [
+            "Offers that seem too good to be true",
+            "Requests for payment using unknown personal accounts",
+            "Messages claiming you won a prize and must pay a fee first",
+            "Transaction alerts that do not match your actual activity"
+        ],
+        "example": "A fake shopping website advertises a mobile phone at a very low price. After payment, the product never arrives and the seller disappears.",
+        "protect": [
+            "Shop only on trusted websites.",
+            "Verify the seller and website before paying.",
+            "Never share your OTP, PIN, or password with anyone.",
+            "Check transaction alerts regularly."
+        ],
+        "prevention": [
+            "Verify websites before making payments.",
+            "Never share your UPI PIN or OTP.",
+            "Avoid offers that seem too good to be true.",
+            "Use trusted payment methods."
+        ]
+    },
+    "phishing": {
+        "title": "Phishing Awareness",
+        "icon": "🎣",
+        "description": "Understand how suspicious emails, messages, and links can trick users.",
+        "intro": "Understand how suspicious emails, messages, and links can trick users.",
+        "what": "Phishing is a scam that pretends to be a bank, delivery company, or trusted service to steal sensitive information using fake messages or websites.",
+        "signs": [
+            "Urgent messages demanding immediate action",
+            "Misspellings in a website address",
+            "Unknown attachments or shortened links",
+            "Requests for passwords, card details, or OTPs"
+        ],
+        "example": "You receive a message that looks like it came from your bank, asking you to click a link to unblock your account. The link leads to a fake website created to steal your details.",
+        "protect": [
+            "Verify the sender before clicking any link.",
+            "Type the official website directly into the browser.",
+            "Do not download unknown attachments.",
+            "Do not reply to suspicious messages; verify through official channels."
+        ],
+        "prevention": [
+            "Do not click suspicious links.",
+            "Verify the sender before responding.",
+            "Never share passwords or OTPs.",
+            "Use multi-factor authentication."
+        ]
+    },
+    "identity-theft": {
+        "title": "Identity Theft",
+        "icon": "🪪",
+        "description": "Learn how to protect your personal information and online accounts.",
+        "intro": "Learn how to protect your personal information and online accounts.",
+        "what": "Identity theft happens when someone misuses another person's personal information, account access, or identity documents without permission.",
+        "signs": [
+            "Accounts or transactions you never created",
+            "Password reset messages you did not request",
+            "Unexpected login notifications",
+            "Messages sent from your account without your knowledge"
+        ],
+        "example": "Someone obtains your password and logs into your social media account, then sends messages pretending to be you.",
+        "protect": [
+            "Do not publicly share personal documents or sensitive details.",
+            "Use a different strong password for every account.",
+            "Enable two-factor authentication.",
+            "If you see unknown login activity, change your password and contact support."
+        ],
+        "prevention": [
+            "Keep personal information private.",
+            "Use strong and unique passwords.",
+            "Avoid sharing sensitive information on public platforms.",
+            "Monitor your accounts for suspicious activity."
+        ]
+    },
+    "cyberbullying": {
+        "title": "Cyberbullying",
+        "icon": "💬",
+        "description": "Understand online harassment, blocking, and reporting.",
+        "intro": "Understand online harassment, blocking, and reporting.",
+        "what": "Cyberbullying includes repeated online insults, threats, humiliation, or harassment directed at a person through social media, games, or messaging apps.",
+        "signs": [
+            "Repeated insulting or threatening messages",
+            "Sharing private photos or information without consent",
+            "Being targeted in an online group",
+            "Threats or fake profiles created to embarrass someone"
+        ],
+        "example": "Several people in an online group repeatedly insult one person and share harmful posts about them.",
+        "protect": [
+            "Save evidence of messages and account activity.",
+            "Use block and report tools on the platform.",
+            "Talk to a trusted adult, teacher, or guardian.",
+            "If threatened or unsafe, seek help from a trusted person or local authority."
+        ],
+        "prevention": [
+            "Block and report abusive accounts.",
+            "Save evidence of threatening messages.",
+            "Avoid responding to abusive messages.",
+            "Tell a trusted adult or appropriate authority."
+        ]
+    }
+}
+
+# Online safety practices
+practices = {
+    "strong-passwords": {
+        "title": "Strong Passwords",
+        "icon": "🔑",
+        "description": "Use long, unique passwords for different accounts. A password manager can help you manage them.",
+        "intro": "Use long, unique passwords for different accounts. A password manager can help you manage them.",
+        "what": "Strong passwords use length, randomness, and uniqueness so that if one account is compromised, other accounts remain protected.",
+        "signs": [
+            "Using the same password on multiple websites",
+            "Using names, birthdays, or 123456 as a password",
+            "Sharing passwords with friends or relatives"
+        ],
+        "example": "If a website password is leaked and you reuse it for your email, your email account may also be at risk.",
+        "protect": [
+            "Create a long passphrase or strong unique password.",
+            "Use a password manager if helpful.",
+            "Never share your password.",
+            "Enable two-factor authentication wherever possible."
+        ],
+        "steps": [
+            "Use long and unique passwords.",
+            "Avoid personal details in passwords.",
+            "Do not reuse passwords across accounts.",
+            "Use a trusted password manager if appropriate."
+        ]
+    },
+    "two-factor": {
+        "title": "Two-Factor Authentication",
+        "icon": "🛡️",
+        "description": "Enable 2FA wherever possible to add another layer of account protection.",
+        "intro": "Enable 2FA wherever possible to add another layer of account protection.",
+        "what": "Two-factor authentication adds a second verification step when signing in, making it much harder for someone to access your account even if they know your password.",
+        "signs": [
+            "2FA is disabled in account settings",
+            "You receive unexpected login alerts",
+            "Unexpected verification requests appear"
+        ],
+        "example": "Even if a password is known, login may still require a code from an authenticator app or another secure verification method.",
+        "protect": [
+            "Enable 2FA in account settings.",
+            "Use an official authenticator app or secure method.",
+            "Never share verification codes.",
+            "Store recovery codes in a safe place."
+        ],
+        "steps": [
+            "Enable two-factor authentication where available.",
+            "Use an authenticator app or another supported secure method.",
+            "Keep recovery options updated.",
+            "Never share verification codes with others."
+        ]
+    },
+    "check-links": {
+        "title": "Check Links",
+        "icon": "🔗",
+        "description": "Verify website addresses before opening links or entering personal information.",
+        "intro": "Verify website addresses before opening links or entering personal information.",
+        "what": "Fake links may look legitimate, but their address may contain small changes or misleading domains that redirect to scam websites.",
+        "signs": [
+            "Websites with spelling errors",
+            "Shortened or suspicious links",
+            "Links that ask for a password or OTP when opened"
+        ],
+        "example": "A message contains a link that looks like your bank, but the website address contains extra characters or a different domain.",
+        "protect": [
+            "Read the domain name carefully.",
+            "Open official websites by typing the address yourself.",
+            "Do not open suspicious links.",
+            "Verify the address before entering personal information."
+        ],
+        "steps": [
+            "Check website addresses carefully.",
+            "Avoid unknown downloads.",
+            "Keep your browser updated.",
+            "Do not ignore security warnings."
+        ]
+    },
+    "protect-otp": {
+        "title": "Protect Your OTP",
+        "icon": "🔐",
+        "description": "Never share OTPs, PINs, or passwords with callers or people messaging you.",
+        "intro": "Never share OTPs, PINs, or passwords with callers or people messaging you.",
+        "what": "An OTP is used to verify a login or transaction. If someone receives it, they can access your account or complete a fraudulent transaction.",
+        "signs": [
+            "A caller asks for your OTP",
+            "A message asks for a code for a prize or refund",
+            "You receive a verification message you did not request"
+        ],
+        "example": "Someone claims to be customer support and asks for your OTP. Do not share it; confirm with the official support team first.",
+        "protect": [
+            "Never share OTPs, PINs, or passwords.",
+            "If an unexpected OTP arrives, do not click any links in the message.",
+            "Check transaction details carefully.",
+            "If in doubt, contact the official service directly."
+        ],
+        "steps": [
+            "Never share OTPs or codes with anyone.",
+            "Verify the caller or sender before responding.",
+            "Keep your phone and accounts protected.",
+            "Use official support channels only."
+        ]
+    },
+    "update-devices": {
+        "title": "Update Your Devices",
+        "icon": "📱",
+        "description": "Install security updates for your operating system, browser, and applications.",
+        "intro": "Install security updates for your operating system, browser, and applications.",
+        "what": "Updates often include security fixes for known weaknesses and vulnerabilities that hackers may try to exploit.",
+        "signs": [
+            "Security updates are pending",
+            "You use an outdated app version",
+            "You install apps from unofficial sources"
+        ],
+        "example": "If your browser is out of date, it may still have known vulnerabilities that can be used against you.",
+        "protect": [
+            "Enable automatic updates.",
+            "Install apps only from official stores.",
+            "Remove apps you no longer use.",
+            "Use device locks and backups."
+        ],
+        "steps": [
+            "Install updates regularly.",
+            "Keep your software current.",
+            "Download apps only from trusted sources.",
+            "Back up your important files."
+        ]
+    },
+    "think-before-posting": {
+        "title": "Think Before Posting",
+        "icon": "🤔",
+        "description": "Avoid publicly sharing your address, live location, or other sensitive personal details.",
+        "intro": "Avoid publicly sharing your address, live location, or other sensitive personal details.",
+        "what": "Public posts can reveal your location, routine, school, or personal details to strangers and potential attackers.",
+        "signs": [
+            "Your public profile contains your address or phone number",
+            "You share your live location publicly",
+            "Private photos are shared carelessly",
+            "Strangers ask for personal details unexpectedly"
+        ],
+        "example": "If you share your live location publicly, strangers may learn where you are and when you are there.",
+        "protect": [
+            "Review social media privacy settings.",
+            "Do not post addresses, passwords, or sensitive details publicly.",
+            "Share live location only with trusted people when necessary.",
+            "Be careful before sharing other people's photos."
+        ],
+        "steps": [
+            "Review your privacy settings.",
+            "Avoid sharing sensitive personal information.",
+            "Limit location sharing.",
+            "Think before posting anything public."
+        ]
+    }
+}
+
+questions = [
+    {
+        "question": "What is phishing?",
+        "options": [
+            "A method of stealing information using deceptive messages",
+            "A way to improve internet speed",
+            "A computer hardware upgrade",
+            "A method of backing up files"
+        ],
+        "answer": 0,
+        "explanation": "Phishing uses deceptive messages or websites to trick people into revealing information."
+    },
+    {
+        "question": "Should you share an OTP with a stranger?",
+        "options": [
+            "Yes, if they ask politely",
+            "Yes, if they claim to be from a bank",
+            "No, never share it with an unverified person",
+            "Only on social media"
+        ],
+        "answer": 2,
+        "explanation": "Never disclose an OTP to an unverified person, even if they claim to represent a bank."
+    },
+    {
+        "question": "Which password practice is safer?",
+        "options": [
+            "Using your name and birth year",
+            "Using the same password everywhere",
+            "Sharing your password with friends",
+            "Using a long, unique password for each account"
+        ],
+        "answer": 3,
+        "explanation": "Long, unique passwords reduce the risk of one compromised account affecting other accounts."
+    },
+    {
+        "question": "What should you do if someone cyberbullies you?",
+        "options": [
+            "Share your password with them",
+            "Block and report the account and seek help",
+            "Send them your personal information",
+            "Click every link they send"
+        ],
+        "answer": 1,
+        "explanation": "Blocking and reporting the account and seeking help are safer responses to cyberbullying."
+    },
+    {
+        "question": "What does two-factor authentication provide?",
+        "options": [
+            "An additional verification step",
+            "Unlimited internet access",
+            "Automatic deletion of all malware",
+            "Free online shopping"
+        ],
+        "answer": 0,
+        "explanation": "Two-factor authentication adds another verification step to help secure an account."
+    },
+    {
+        "question": "Which action helps protect against malware?",
+        "options": [
+            "Opening every email attachment",
+            "Downloading unknown software",
+            "Installing updates and using trusted downloads",
+            "Ignoring security warnings"
+        ],
+        "answer": 2,
+        "explanation": "Updates and trusted downloads help reduce exposure to malicious software."
+    },
+    {
+        "question": "What is identity theft?",
+        "options": [
+            "Improving a computer's performance",
+            "Using another person's information without permission",
+            "Creating a backup",
+            "Changing a website's theme"
+        ],
+        "answer": 1,
+        "explanation": "Identity theft involves unauthorized use of another person's personal information."
+    },
+    {
+        "question": "What should you do before making an online payment?",
+        "options": [
+            "Share your UPI PIN with the seller",
+            "Ignore the payment details",
+            "Trust every link in a message",
+            "Verify the website and payment request"
+        ],
+        "answer": 3,
+        "explanation": "Verify the website and payment request before sending money."
+    }
+]
+
+@app.route("/")
+def index():
+    return render_template("index.html", topics=topics, practices=practices)
+
+@app.route("/home")
+def home():
+    return redirect(url_for("index"))
+
+@app.route("/report")
+def report():
+    return render_template("report.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/topic/<slug>")
+def topic_detail(slug):
+    item = topics.get(slug)
+    if item is None:
+        return render_template("error.html", message="The requested cybercrime topic was not found."), 404
+    return render_template("detail.html", item=item, kind="Cybercrime Topic")
+
+@app.route("/practice/<slug>")
+def practice_detail(slug):
+    item = practices.get(slug)
+    if item is None:
+        return render_template("error.html", message="The requested safety practice was not found."), 404
+    return render_template("detail.html", item=item, kind="Safety Practice")
+
+@app.route("/quiz", methods=["GET", "POST"])
+def quiz():
+    score = None
+    results = []
+
+    if request.method == "POST":
+        for index, question in enumerate(questions):
+            selected = request.form.get(f"q{index}")
+            try:
+                selected_index = int(selected)
+            except (TypeError, ValueError):
+                selected_index = -1
+
+            is_correct = selected_index == question["answer"]
+            results.append({
+                "question": question["question"],
+                "selected": selected_index,
+                "correct": question["answer"],
+                "is_correct": is_correct,
+                "explanation": question["explanation"],
+                "options": question["options"]
+            })
+
+        score = sum(1 for result in results if result["is_correct"])
+
+    return render_template("quiz.html", questions=questions, score=score, results=results)
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("error.html", message="The page you requested could not be found."), 404
+
+if __name__ == "__main__":
+    app.run(debug=True)from flask import Flask, render_template, request, redirect, url_for
+
+app = Flask(__name__)
+
+# Cybercrime awareness topics
+topics = {
+    "online-fraud": {
+        "title": "Online Fraud",
+        "icon": "🔐",
+        "description": "Learn to recognize payment scams, fake offers, and online shopping fraud.",
+        "intro": "Learn to recognize payment scams, fake offers, and online shopping fraud.",
+        "what": "Online fraud happens when scammers trick people into sending money or sharing banking details through fake offers, websites, or payment requests.",
+        "signs": [
+            "Offers that seem too good to be true",
+            "Requests for payment using unknown personal accounts",
+            "Messages claiming you won a prize and must pay a fee first",
+            "Transaction alerts that do not match your actual activity"
+        ],
+        "example": "A fake shopping website advertises a mobile phone at a very low price. After payment, the product never arrives and the seller disappears.",
+        "protect": [
+            "Shop only on trusted websites.",
+            "Verify the seller and website before paying.",
+            "Never share your OTP, PIN, or password with anyone.",
+            "Check transaction alerts regularly."
+        ],
+        "prevention": [
+            "Verify websites before making payments.",
+            "Never share your UPI PIN or OTP.",
+            "Avoid offers that seem too good to be true.",
+            "Use trusted payment methods."
+        ]
+    },
+    "phishing": {
+        "title": "Phishing Awareness",
+        "icon": "🎣",
+        "description": "Understand how suspicious emails, messages, and links can trick users.",
+        "intro": "Understand how suspicious emails, messages, and links can trick users.",
+        "what": "Phishing is a scam that pretends to be a bank, delivery company, or trusted service to steal sensitive information using fake messages or websites.",
+        "signs": [
+            "Urgent messages demanding immediate action",
+            "Misspellings in a website address",
+            "Unknown attachments or shortened links",
+            "Requests for passwords, card details, or OTPs"
+        ],
+        "example": "You receive a message that looks like it came from your bank, asking you to click a link to unblock your account. The link leads to a fake website created to steal your details.",
+        "protect": [
+            "Verify the sender before clicking any link.",
+            "Type the official website directly into the browser.",
+            "Do not download unknown attachments.",
+            "Do not reply to suspicious messages; verify through official channels."
+        ],
+        "prevention": [
+            "Do not click suspicious links.",
+            "Verify the sender before responding.",
+            "Never share passwords or OTPs.",
+            "Use multi-factor authentication."
+        ]
+    },
+    "identity-theft": {
+        "title": "Identity Theft",
+        "icon": "🪪",
+        "description": "Learn how to protect your personal information and online accounts.",
+        "intro": "Learn how to protect your personal information and online accounts.",
+        "what": "Identity theft happens when someone misuses another person's personal information, account access, or identity documents without permission.",
+        "signs": [
+            "Accounts or transactions you never created",
+            "Password reset messages you did not request",
+            "Unexpected login notifications",
+            "Messages sent from your account without your knowledge"
+        ],
+        "example": "Someone obtains your password and logs into your social media account, then sends messages pretending to be you.",
+        "protect": [
+            "Do not publicly share personal documents or sensitive details.",
+            "Use a different strong password for every account.",
+            "Enable two-factor authentication.",
+            "If you see unknown login activity, change your password and contact support."
+        ],
+        "prevention": [
+            "Keep personal information private.",
+            "Use strong and unique passwords.",
+            "Avoid sharing sensitive information on public platforms.",
+            "Monitor your accounts for suspicious activity."
+        ]
+    },
+    "cyberbullying": {
+        "title": "Cyberbullying",
+        "icon": "💬",
+        "description": "Understand online harassment, blocking, and reporting.",
+        "intro": "Understand online harassment, blocking, and reporting.",
+        "what": "Cyberbullying includes repeated online insults, threats, humiliation, or harassment directed at a person through social media, games, or messaging apps.",
+        "signs": [
+            "Repeated insulting or threatening messages",
+            "Sharing private photos or information without consent",
+            "Being targeted in an online group",
+            "Threats or fake profiles created to embarrass someone"
+        ],
+        "example": "Several people in an online group repeatedly insult one person and share harmful posts about them.",
+        "protect": [
+            "Save evidence of messages and account activity.",
+            "Use block and report tools on the platform.",
+            "Talk to a trusted adult, teacher, or guardian.",
+            "If threatened or unsafe, seek help from a trusted person or local authority."
+        ],
+        "prevention": [
+            "Block and report abusive accounts.",
+            "Save evidence of threatening messages.",
+            "Avoid responding to abusive messages.",
+            "Tell a trusted adult or appropriate authority."
+        ]
+    }
+}
+
+# Online safety practices
+practices = {
+    "strong-passwords": {
+        "title": "Strong Passwords",
+        "icon": "🔑",
+        "description": "Use long, unique passwords for different accounts. A password manager can help you manage them.",
+        "intro": "Use long, unique passwords for different accounts. A password manager can help you manage them.",
+        "what": "Strong passwords use length, randomness, and uniqueness so that if one account is compromised, other accounts remain protected.",
+        "signs": [
+            "Using the same password on multiple websites",
+            "Using names, birthdays, or 123456 as a password",
+            "Sharing passwords with friends or relatives"
+        ],
+        "example": "If a website password is leaked and you reuse it for your email, your email account may also be at risk.",
+        "protect": [
+            "Create a long passphrase or strong unique password.",
+            "Use a password manager if helpful.",
+            "Never share your password.",
+            "Enable two-factor authentication wherever possible."
+        ],
+        "steps": [
+            "Use long and unique passwords.",
+            "Avoid personal details in passwords.",
+            "Do not reuse passwords across accounts.",
+            "Use a trusted password manager if appropriate."
+        ]
+    },
+    "two-factor": {
+        "title": "Two-Factor Authentication",
+        "icon": "🛡️",
+        "description": "Enable 2FA wherever possible to add another layer of account protection.",
+        "intro": "Enable 2FA wherever possible to add another layer of account protection.",
+        "what": "Two-factor authentication adds a second verification step when signing in, making it much harder for someone to access your account even if they know your password.",
+        "signs": [
+            "2FA is disabled in account settings",
+            "You receive unexpected login alerts",
+            "Unexpected verification requests appear"
+        ],
+        "example": "Even if a password is known, login may still require a code from an authenticator app or another secure verification method.",
+        "protect": [
+            "Enable 2FA in account settings.",
+            "Use an official authenticator app or secure method.",
+            "Never share verification codes.",
+            "Store recovery codes in a safe place."
+        ],
+        "steps": [
+            "Enable two-factor authentication where available.",
+            "Use an authenticator app or another supported secure method.",
+            "Keep recovery options updated.",
+            "Never share verification codes with others."
+        ]
+    },
+    "check-links": {
+        "title": "Check Links",
+        "icon": "🔗",
+        "description": "Verify website addresses before opening links or entering personal information.",
+        "intro": "Verify website addresses before opening links or entering personal information.",
+        "what": "Fake links may look legitimate, but their address may contain small changes or misleading domains that redirect to scam websites.",
+        "signs": [
+            "Websites with spelling errors",
+            "Shortened or suspicious links",
+            "Links that ask for a password or OTP when opened"
+        ],
+        "example": "A message contains a link that looks like your bank, but the website address contains extra characters or a different domain.",
+        "protect": [
+            "Read the domain name carefully.",
+            "Open official websites by typing the address yourself.",
+            "Do not open suspicious links.",
+            "Verify the address before entering personal information."
+        ],
+        "steps": [
+            "Check website addresses carefully.",
+            "Avoid unknown downloads.",
+            "Keep your browser updated.",
+            "Do not ignore security warnings."
+        ]
+    },
+    "protect-otp": {
+        "title": "Protect Your OTP",
+        "icon": "🔐",
+        "description": "Never share OTPs, PINs, or passwords with callers or people messaging you.",
+        "intro": "Never share OTPs, PINs, or passwords with callers or people messaging you.",
+        "what": "An OTP is used to verify a login or transaction. If someone receives it, they can access your account or complete a fraudulent transaction.",
+        "signs": [
+            "A caller asks for your OTP",
+            "A message asks for a code for a prize or refund",
+            "You receive a verification message you did not request"
+        ],
+        "example": "Someone claims to be customer support and asks for your OTP. Do not share it; confirm with the official support team first.",
+        "protect": [
+            "Never share OTPs, PINs, or passwords.",
+            "If an unexpected OTP arrives, do not click any links in the message.",
+            "Check transaction details carefully.",
+            "If in doubt, contact the official service directly."
+        ],
+        "steps": [
+            "Never share OTPs or codes with anyone.",
+            "Verify the caller or sender before responding.",
+            "Keep your phone and accounts protected.",
+            "Use official support channels only."
+        ]
+    },
+    "update-devices": {
+        "title": "Update Your Devices",
+        "icon": "📱",
+        "description": "Install security updates for your operating system, browser, and applications.",
+        "intro": "Install security updates for your operating system, browser, and applications.",
+        "what": "Updates often include security fixes for known weaknesses and vulnerabilities that hackers may try to exploit.",
+        "signs": [
+            "Security updates are pending",
+            "You use an outdated app version",
+            "You install apps from unofficial sources"
+        ],
+        "example": "If your browser is out of date, it may still have known vulnerabilities that can be used against you.",
+        "protect": [
+            "Enable automatic updates.",
+            "Install apps only from official stores.",
+            "Remove apps you no longer use.",
+            "Use device locks and backups."
+        ],
+        "steps": [
+            "Install updates regularly.",
+            "Keep your software current.",
+            "Download apps only from trusted sources.",
+            "Back up your important files."
+        ]
+    },
+    "think-before-posting": {
+        "title": "Think Before Posting",
+        "icon": "🤔",
+        "description": "Avoid publicly sharing your address, live location, or other sensitive personal details.",
+        "intro": "Avoid publicly sharing your address, live location, or other sensitive personal details.",
+        "what": "Public posts can reveal your location, routine, school, or personal details to strangers and potential attackers.",
+        "signs": [
+            "Your public profile contains your address or phone number",
+            "You share your live location publicly",
+            "Private photos are shared carelessly",
+            "Strangers ask for personal details unexpectedly"
+        ],
+        "example": "If you share your live location publicly, strangers may learn where you are and when you are there.",
+        "protect": [
+            "Review social media privacy settings.",
+            "Do not post addresses, passwords, or sensitive details publicly.",
+            "Share live location only with trusted people when necessary.",
+            "Be careful before sharing other people's photos."
+        ],
+        "steps": [
+            "Review your privacy settings.",
+            "Avoid sharing sensitive personal information.",
+            "Limit location sharing.",
+            "Think before posting anything public."
+        ]
+    }
+}
+
+# Quiz questions
+questions = [
+    {
+        "question": "What is phishing?",
+        "options": [
+            "A method of stealing information using deceptive messages",
+            "A way to improve internet speed",
+            "A computer hardware upgrade",
+            "A method of backing up files"
+        ],
+        "answer": 0,
+        "explanation": "Phishing uses deceptive messages or websites to trick people into revealing information."
+    },
+    {
+        "question": "Should you share an OTP with a stranger?",
+        "options": [
+            "Yes, if they ask politely",
+            "Yes, if they claim to be from a bank",
+            "No, never share it with an unverified person",
+            "Only on social media"
+        ],
+        "answer": 2,
+        "explanation": "Never disclose an OTP to an unverified person, even if they claim to represent a bank."
+    },
+    {
+        "question": "Which password practice is safer?",
+        "options": [
+            "Using your name and birth year",
+            "Using the same password everywhere",
+            "Sharing your password with friends",
+            "Using a long, unique password for each account"
+        ],
+        "answer": 3,
+        "explanation": "Long, unique passwords reduce the risk of one compromised account affecting other accounts."
+    },
+    {
+        "question": "What should you do if someone cyberbullies you?",
+        "options": [
+            "Share your password with them",
+            "Block and report the account and seek help",
+            "Send them your personal information",
+            "Click every link they send"
+        ],
+        "answer": 1,
+        "explanation": "Blocking and reporting the account and seeking help are safer responses to cyberbullying."
+    },
+    {
+        "question": "What does two-factor authentication provide?",
+        "options": [
+            "An additional verification step",
+            "Unlimited internet access",
+            "Automatic deletion of all malware",
+            "Free online shopping"
+        ],
+        "answer": 0,
+        "explanation": "Two-factor authentication adds another verification step to help secure an account."
+    },
+    {
+        "question": "Which action helps protect against malware?",
+        "options": [
+            "Opening every email attachment",
+            "Downloading unknown software",
+            "Installing updates and using trusted downloads",
+            "Ignoring security warnings"
+        ],
+        "answer": 2,
+        "explanation": "Updates and trusted downloads help reduce exposure to malicious software."
+    },
+    {
+        "question": "What is identity theft?",
+        "options": [
+            "Improving a computer's performance",
+            "Using another person's information without permission",
+            "Creating a backup",
+            "Changing a website's theme"
+        ],
+        "answer": 1,
+        "explanation": "Identity theft involves unauthorized use of another person's personal information."
+    },
+    {
+        "question": "What should you do before making an online payment?",
+        "options": [
+            "Share your UPI PIN with the seller",
+            "Ignore the payment details",
+            "Trust every link in a message",
+            "Verify the website and payment request"
+        ],
+        "answer": 3,
+        "explanation": "Verify the website and payment request before sending money."
+    }
+]
+
+
+@app.route("/")
+def index():
+    return render_template(
+        "index.html",
+        topics=topics,
+        practices=practices
+    )
+
+
+@app.route("/home")
+def home():
+    return redirect(url_for("index"))
+
+
+@app.route("/report")
+def report():
+    return render_template("report.html")
+
+
+@app.route("/help")
+def help_page():
+    return render_template("help.html")
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/logout")
+def logout():
+    return redirect(url_for("index"))
+
+
+@app.route("/topic/<slug>")
+def topic_detail(slug):
+    item = topics.get(slug)
+
+    if item is None:
+        return render_template(
+            "error.html",
+            message="The requested cybercrime topic was not found."
+        ), 404
+
+    return render_template(
+        "detail.html",
+        item=item,
+        kind="Cybercrime Topic"
+    )
+
+
+@app.route("/practice/<slug>")
+def practice_detail(slug):
+    item = practices.get(slug)
+
+    if item is None:
+        return render_template(
+            "error.html",
+            message="The requested safety practice was not found."
+        ), 404
+
+    return render_template(
+        "detail.html",
+        item=item,
+        kind="Safety Practice"
+    )
+
+
+@app.route("/quiz", methods=["GET", "POST"])
+def quiz():
+    score = None
+    results = []
+
+    if request.method == "POST":
+        for index, question in enumerate(questions):
+            selected = request.form.get(f"q{index}")
+
+            try:
+                selected_index = int(selected)
+            except (TypeError, ValueError):
+                selected_index = -1
+
+            is_correct = selected_index == question["answer"]
+
+            results.append({
+                "question": question["question"],
+                "selected": selected_index,
+                "correct": question["answer"],
+                "is_correct": is_correct,
+                "explanation": question["explanation"],
+                "options": question["options"]
+            })
+
+        score = sum(
+            1 for result in results if result["is_correct"]
+        )
+
+    return render_template(
+        "quiz.html",
+        questions=questions,
+        score=score,
+        results=results
+    )
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template(
+        "error.html",
+        message="The page you requested could not be found."
+    ), 404
+
+
+if __name__ == "__main__":
+    app.run(debug=True

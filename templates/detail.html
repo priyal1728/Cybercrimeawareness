@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.title }} | CyberSafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="brand" href="{{ url_for('home') }}">🔐 CyberSafe</a>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('quiz') }}">Quiz</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <main class="detail-container">
+        <a class="back-link" href="{{ url_for('home') }}">← Back to Home</a>
+
+        <header class="detail-hero">
+            <span class="detail-icon">{{ item.icon }}</span>
+            <p class="eyebrow">{{ kind }}</p>
+            <h1>{{ item.title }}</h1>
+            <p>{{ item.intro }}</p>
+        </header>
+
+        <section class="detail-panel">
+            <h2>What is it?</h2>
+            <p>{{ item.what }}</p>
+        </section>
+
+        <section class="detail-panel">
+            <h2>Detailed Information</h2>
+            <ul class="detail-list">
+                {% for detail in item.details %}
+                <li>{{ detail }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="detail-panel">
+            <h2>Warning Signs</h2>
+            <ul class="detail-list">
+                {% for sign in item.signs %}
+                <li>{{ sign }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="detail-panel example-panel">
+            <h2>Example</h2>
+            <p>{{ item.example }}</p>
+        </section>
+
+        <section class="detail-panel">
+            <h2>How to Stay Safe</h2>
+            <ul class="detail-list">
+                {% for tip in item.protect %}
+                <li>{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <div class="detail-actions">
+            <a class="btn btn-outline" href="{{ url_for('home') }}">Explore More Topics</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>CyberSafe — Learn smart. Stay safe.</p>
+    </footer>
+</body>
+</html>
